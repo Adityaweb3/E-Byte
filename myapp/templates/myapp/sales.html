@@ -1,0 +1,193 @@
+{% extends 'myapp/base.html' %}
+{% block body %}
+<div class='flex justify-between bg-gray-100 p-6 rounded-lg shadow-md'>
+    <div class='ml-10 text-2xl font-bold text-gray-800'>
+        Sales Stats
+    </div>
+    <div class='mr-20'>
+        <a class='bg-green-500 rounded-lg text-white px-6 py-3 hover:bg-green-600 transition duration-300' href="{% url 'dashboard' %}">
+            Dashboard
+        </a>
+    </div>
+</div>
+<div class='shadow-lg p-10 m-5'>
+    <div class='text-5xl text-green-600 font-bold'>
+        ${{total_sales.amount__sum}}
+    </div>
+    <div class='mt-10 text-gray-600 text-lg'>Total Sales</div>
+</div>
+<div class='flex'>
+    <div class='p-5 w-1/3'>
+        <div class='shadow-lg p-10'>
+            <div class='text-4xl text-blue-500 font-bold'>
+                $ {{yearly_sales.amount__sum}}
+            </div>
+            <div class='text-lg text-gray-600'>Yearly Sales</div>
+        </div>
+    </div>
+    <div class='p-5 w-1/3'>
+        <div class='shadow-lg p-10'>
+            <div class='text-4xl  text-purple-500 font-bold'>
+                $ {{monthly_sales.amount__sum}}
+            </div>
+            <div class='text-lg text-gray-600'>Monthly Sales</div>
+        </div>
+    </div>
+    <div class='p-5 w-1/3'>
+        <div class='shadow-lg p-10'>
+            <div class='text-4xl font-bold'>
+                $ {{weekly_sales.amount__sum}}
+            </div>
+            <div class='text-lg text-gray-600'>Weekly Sales</div>
+        </div>
+    </div>
+
+</div>
+<div class='flex '>
+    <div class='w-1/2 shadow-lg m-10' id='sales-table'>
+        <div class='mt-10 ml-10 font-bold text-xl'>
+            30 Days sales
+        </div>
+        <div class='flex mt-10 mt-5 mb-5'>
+            <div class='w-1/2 font-semibold'>
+                Day
+            </div>
+            <div class='w-1/2 font-semibold'>
+                Total Sales
+            </div>
+        </div>
+        {% for daily_sales_sum in daily_sales_sums%}
+        <div class='flex mt-10 mt-5 mb-5'>
+            <div class='w-1/2 created-date font-semibold'>
+                {{daily_sales_sum.date}}
+            </div>
+            <div class='w-1/2 day-sum font-bold text-green-500'>
+                 $ {{daily_sales_sum.sum}}
+            </div>
+        </div>
+        {%endfor%}
+    </div>
+    <div class='w-1/2 shadow-lg m-10 p-10'>
+        <div class='ml-10 mt-10 font-bold text-xl'>30 days Sales</div>
+            <canvas id="myChart"></canvas>
+          
+    </div>
+</div>
+<div class='flex '>
+    <div class='w-1/2 shadow-lg m-10 p-10'>
+        <div class='ml-10 mt-10 font-bold text-xl'>Product Sales</div>
+            <canvas id="myChart1"></canvas>
+          
+    </div>
+    <div class='w-1/2 shadow-lg m-10'>
+        <div class='mt-10 ml-10 font-bold text-xl'>
+            Product Sales
+        </div>
+        <div class='flex mt-10 mt-5 mb-5'>
+            <div class='w-1/2 font-semibold'>
+               Product Name
+            </div>
+            <div class='w-1/2 font-semibold'>
+                Total Sales
+            </div>
+        </div>
+        {% for product_sales_sum in product_sales_sums%}
+        <div class='flex mt-10 mt-5 mb-5'>
+            <div class='w-1/2 product-name font-semibold'>
+                {{ product_sales_sum.product__name }}
+            </div>
+            <div class='w-1/2 font-bold product-sums text-green-500'>
+                  {{product_sales_sum.sum}}
+            </div>
+        </div>
+        {%endfor%}
+    </div>
+    
+</div>
+
+<script>
+    const sums = document.getElementsByClassName('day-sum');
+const sum_values = [];
+
+for (let i = 0; i < sums.length; i++) {
+    let single_sum = sums[i].innerText.trim(); 
+    let numeric_value = parseInt(single_sum.replace('$', '').trim());
+    sum_values.push(numeric_value);
+}
+
+console.log(sum_values);
+const dates = document.getElementsByClassName('created-date');
+const date_values = [];
+
+for (let i = 0; i < dates.length; i++) {
+    let single_date = dates[i].innerText.trim(); 
+    let date_value = single_date;
+    date_values.push(date_value);
+}
+
+console.log(date_values);
+
+    const ctx = document.getElementById('myChart');
+  
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: date_values,
+        datasets: [{
+          label: '30 days sales',
+          data: sum_values,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    })
+
+    const product_names = document.getElementsByClassName('product-name');
+    const name_values = [];
+    
+    for (let i = 0; i < product_names.length; i++) {
+        let single_name = product_names[i].innerText; 
+        name_values.push(single_name);
+    }
+    console.log(name_values);
+    
+    const product_sums = document.getElementsByClassName('product-sums');
+    const product_sums_values = [];
+    
+    for (let i = 0; i < product_sums.length; i++) {
+        let single_sum = product_sums[i].innerText; 
+        product_sums_values.push(single_sum);  // Fix the typo here
+    }
+    console.log(product_sums_values);
+    
+    const ctx1 = document.getElementById('myChart1');
+    
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: name_values,
+            datasets: [{
+                label: 'Product sales',
+                data: product_sums_values,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+  </script>
+    
+    
+{% endblock %}

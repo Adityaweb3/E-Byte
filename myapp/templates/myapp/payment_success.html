@@ -1,0 +1,28 @@
+{% extends 'myapp/base.html' %}
+
+{% block body %}
+{% comment %} <h1>Payment Successful!</h1>
+<p>Thank you for your purchase of {{ product.name }}.</p>
+<p>Order ID: {{ order.id }}</p>
+<p>Amount Paid: ${{ order.amount }}</p>
+<a class ="bg-green-500 font-bold text-white px-4 py-2" href="{{order.product.file.url}}" download>Click Here to Download</a> {% endcomment %}
+<div class="grid place-items-center h-screen bg-gray-100 px-4">
+    <div class="text-center">
+        <!-- Image centered above the "Payment Successful" text -->
+        <img class="h-24 mb-6 mx-auto" src="https://cdn2.iconfinder.com/data/icons/vivid/48/bag-256.png" alt="Payment Success">
+
+        <!-- Payment Successful Text -->
+        <div class="font-bold text-6xl mb-6 text-green-600">Payment Successful</div>
+        
+        <!-- Payment Details -->
+        <p class="text-lg font-semibold mb-2">Thank you for your purchase of <span class="text-gray-800">{{ product.name }}</span>.</p>
+        <p class="text-lg mb-2">Order ID: <span class="font-semibold">{{ order.id }}</span></p>
+        <p class="text-lg mb-6">Amount Paid: <span class="font-semibold">${{ order.amount }}</span></p>
+        
+        <!-- Download Button -->
+        <a class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg" href="{{ order.product.file.url }}" download>
+            Download
+        </a>
+    </div>
+</div>
+{% endblock %}

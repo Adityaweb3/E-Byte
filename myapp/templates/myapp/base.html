@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>E-Byte</title>
+</head>
+<body>
+    <nav class="shadow-lg">
+        <div class='flex flex-wrap justify-between ml-5 items-center mx-auto px-4 py-2.5'>
+            <a href="{% url 'index'%}" class='flex items-center'>
+                <img class = "h-9 mr-3"src ="https://cdn2.iconfinder.com/data/icons/vivid/48/bag-256.png" alt="">
+                <span class="self-center text-xl font-bold text-blue-600 bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text  rounded-lg p-2">
+                    E-Byte
+                </span>
+            </a>
+            <div class='flex items-center'>
+                <a href = "{%url 'dashboard'%}" class="mr-6 text-sm font-medium text-grey-500">Dashboard</a>
+                <a href = "{%url 'sales'%}" class="mr-6 text-sm font-medium text-grey-500">Sales</a>
+                {% comment %} <a href = "" class="mr-6 text-sm font-medium text-grey-500">Order</a> {% endcomment %}
+                <a href = "{% url 'createproduct' %}" class="mr-6 text-sm font-medium text-grey-500">Create</a>
+                <a href = "{% url 'purchases'%}" class="mr-6 text-sm font-medium text-grey-500">My Purchase</a>
+                <a href = "{% url 'logout' %}" class="mr-6 text-sm font-medium text-grey-500">Logout</a>
+            </div>
+        </div>
+    </nav>
+  {% block body %}
+  {% endblock %}
+</body>
+</html>

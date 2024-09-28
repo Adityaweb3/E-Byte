@@ -1,0 +1,61 @@
+{% extends 'myapp/base.html' %}
+{% block body %}
+
+<!-- Page Wrapper with Gradient Background -->
+<div class='min-h-screen bg-gradient-to-r from-yellow-200 via-orange-100 to-pink-200 flex flex-col'>
+
+    <!-- Header Section -->
+    <div class='flex justify-between items-center p-6'>
+        <h1 class="text-3xl font-bold text-gray-700 ml-20">My Products</h1>
+        <a href="{% url 'createproduct' %}" class="bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition duration-300 mr-8">
+            Add Product
+        </a>
+    </div>
+
+    <!-- Products Section -->
+    <div class='products-container p-10 w-full max-w-7xl mx-auto'>
+        <div class='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10'>
+            {% for product in products %}
+            <!-- Individual Product Card -->
+            <div class='bg-white shadow-lg rounded-lg overflow-hidden'>
+                <div class='relative'>
+                    <!-- Product Image -->
+                    <img class='w-full h-48 object-cover' src="https://th.bing.com/th/id/OIP.kEKWG9WO-kIzLXqm6_khxgHaFS" alt="{{product.name}}">
+                    <!-- Hover Edit Button -->
+                    <div class='absolute inset-0 bg-gradient-to-t from-black to-transparent text-white p-4 flex items-end opacity-0 hover:opacity-100 transition-opacity duration-300'>
+                        <a href="{% url 'editproduct' product.id %}" class='text-lg font-semibold bg-gray-600 px-4 py-2 rounded-lg'>
+                            Edit Product
+                        </a>
+                    </div>
+                </div>
+                <!-- Product Details -->
+                <div class='p-6'>
+                    <div class='text-xl font-bold text-gray-800 mb-3'>
+                        {{product.name}}
+                    </div>
+                    <div class='text-lg text-green-600 mb-5'>
+                        ${{product.price}}
+                    </div>
+                    <!-- Product Stats -->
+                    <div class='flex justify-between text-sm text-gray-600'>
+                        <div class='text-center'>
+                            <div class='text-lg font-bold text-green-500'>${{product.total_sales_amount}}</div>
+                            <div class='text-xs'>Total Earnings</div>
+                        </div>
+                        <div class='text-center'>
+                            <div class='text-lg font-bold'>{{product.total_sales}}</div>
+                            <div class='text-xs'>Total Orders</div>
+                        </div>
+                        <div class='text-center'>
+                            <div class='text-lg font-bold'>4.8</div>
+                            <div class='text-xs'>Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

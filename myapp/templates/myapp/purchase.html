@@ -1,0 +1,55 @@
+{% extends 'myapp/base.html' %}
+{% block body %}
+<!-- Page Container with Gradient Background -->
+<div class='min-h-screen bg-gradient-to-r from-yellow-200 via-orange-100 to-pink-200 flex flex-col items-center p-10'>
+
+    <!-- Page Header -->
+    <div class='w-full max-w-6xl flex justify-between items-center mb-8'>
+        <h1 class="text-4xl font-bold text-yellow-800">My Purchases</h1>
+        <a href="{% url 'createproduct' %}" class="bg-yellow-600 text-white px-6 py-3 rounded-lg hover:bg-green-500 transition duration-300 font-semibold">
+            Add Product
+        </a>
+    </div>
+
+    <!-- Order List Container (Cards) -->
+    <div class='w-full max-w-6xl bg-white shadow-lg rounded-lg p-10'>
+
+        <!-- Order Header -->
+        <div class='order-header flex font-bold text-gray-600 text-lg border-b-2 pb-4 mb-6'>
+            <div class='w-1/4'>
+                Product Name
+            </div>
+            <div class='w-1/4'>
+                Amount Paid
+            </div>
+            <div class='w-1/4'>
+                Order Date
+            </div>
+            <div class='w-1/4'>
+                Download Link
+            </div>
+        </div>
+
+        <!-- Order Rows -->
+        {% for order in orders %}
+        <div class='flex items-center border-b-2 last:border-b-0 py-4'>
+            <div class='w-1/4 font-semibold text-gray-800'>
+                {{order.product.name}}
+            </div>
+            <div class='w-1/4 text-green-600 font-semibold'>
+                ${{order.amount}}
+            </div>
+            <div class='w-1/4 text-gray-700'>
+                {{order.created_on|date:"M d, Y"}}
+            </div>
+            <div class='w-1/4'>
+                <a class='bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-500 transition duration-300' href="{{order.product.file.url}}" download>
+                    Click to Download
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+        
+    </div>
+</div>
+{% endblock %}
