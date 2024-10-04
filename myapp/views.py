@@ -19,7 +19,7 @@ def index(request) :
     return render(request , 'myapp/index.html' , {'products' : products})
 
 def detail(request , id) : 
-    product = Product.objects.get(id=id)
+    product = get_object_or_404(Product, id=id)
     host = request.get_host()
     paypal_checkout = {
         'business' : settings.PAYPAL_RECEIVER_EMAIL , 
@@ -38,9 +38,8 @@ def detail(request , id) :
 
 def paymentSuccessful(request , id) : 
     product = get_object_or_404(Product, id=id)
-
-    # Retrieve customer email from request or use a placeholder
-    customer_email = request.user.email if request.user.is_authenticated else 'guest@example.com'
+    user = request.user
+    customer_email = user.email if user.is_authenticated else 'guest@example.com'
 
     # Create and save the order to the backend
     order = OrderDetail.objects.create(
@@ -63,6 +62,7 @@ def paymentFailed(request ,id) :
     product = Product.objects.get(id = id) 
     return render(request , 'myapp/payment-failed.html' , {'product' : product})
 
+
 def create_product(request):
     if request.method == "POST":
         product_form = ProductForm(request.POST, request.FILES)  # Handle both file and image uploads
@@ -71,7 +71,7 @@ def create_product(request):
             new_product.seller = request.user
             new_product.save()
             return redirect('index')  # Redirect to the index page after saving
-    else:
+    else: 
         product_form = ProductForm()
     return render(request, 'myapp/create_product.html', {'product_form': product_form})
 
@@ -123,30 +123,55 @@ def my_purchase(request) :
     orders = OrderDetail.objects.filter(customer_email=request.user.email)
     return render(request , 'myapp/purchase.html' , {'orders' : orders})
 
-def sales(request) : 
-    orders= OrderDetail.objects.filter(product__seller=request.user)
-    total_sales = orders.aggregate(Sum('amount'))
-    # calculating yearly sales :
-    last_year=datetime.date.today()-datetime.timedelta(days=365)
-    data= OrderDetail.objects.filter(product__seller=request.user , created_on__gt=last_year)
-    yearly_sales=data.aggregate(Sum('amount'))
+def sales(request):
+    user = request.user
+    orders = OrderDetail.objects.filter(product__seller=user).values("amount", "created_on", "product__name")
+    today = datetime.date.today()
 
-    # calculting monthly sales
-    last_month=datetime.date.today()-datetime.timedelta(days=30)
-    data1= OrderDetail.objects.filter(product__seller=request.user , created_on__gt=last_month)
-    monthly_sales=data1.aggregate(Sum('amount'))
-    #calculating weekly sales
-    last_week=datetime.date.today()-datetime.timedelta(days=7)
-    data2= OrderDetail.objects.filter(product__seller=request.user , created_on__gt=last_week)
-    weekly_sales=data2.aggregate(Sum('amount'))
+    # Calculate date ranges
+    last_year = today - datetime.timedelta(days=365)
+    last_month = today - datetime.timedelta(days=30)
+    last_week = today - datetime.timedelta(days=7)
 
-    # Everyday Sum fo last month 
-    daily_sales_sums = OrderDetail.objects.filter(
-    product__seller=request.user
-).annotate(
-    date=TruncDate('created_on')  # Truncate the datetime to just the date
-).values('date').annotate(
-    sum=Sum('amount')
-).order_by('date')
-    product_sales_sums = OrderDetail.objects.filter(product__seller=request.user).values('product__name').order_by('product__name').annotate(sum=Sum('amount'))
-    return render(request , 'myapp/sales.html' , {'total_sales' : total_sales , 'yearly_sales' : yearly_sales , 'monthly_sales' : monthly_sales , 'weekly_sales' : weekly_sales , 'daily_sales_sums' : daily_sales_sums , 'product_sales_sums' : product_sales_sums})
+    total_sales_amt = 0
+    yearly_sales_amt = 0
+    monthly_sales_amt = 0
+    weekly_sales_amt = 0
+    prd_name__grouping_map = dict()
+    daily_sale_mapping_map = dict()
+
+    for order in orders:
+        created_on = order["created_on"].date()  # Convert datetime to date
+        amount = order["amount"]
+
+        if created_on > last_week:
+            weekly_sales_amt += amount
+            yearly_sales_amt += amount
+            monthly_sales_amt += amount
+        elif created_on > last_month:
+            yearly_sales_amt += amount
+            monthly_sales_amt += amount
+        elif created_on > last_year:
+            yearly_sales_amt += amount
+
+        prd_name = order["product__name"]
+        if prd_name not in prd_name__grouping_map:
+            prd_name__grouping_map[prd_name] = {'product__name': prd_name, "sum": 0}
+        prd_name__grouping_map[prd_name]['sum'] += amount
+
+        created_on_date = created_on.strftime('%Y-%m-%d')
+        if created_on_date not in daily_sale_mapping_map:
+            daily_sale_mapping_map[created_on_date] = {"date": created_on_date, "sum": 0}
+        daily_sale_mapping_map[created_on_date]['sum'] += amount
+
+    daily_sales_sums = sorted(list(daily_sale_mapping_map.values()), key=lambda x: x['date'])
+    product_sales_sums = sorted(list(prd_name__grouping_map.values()), key=lambda x: x['product__name'])
+
+    return render(request, 'myapp/sales.html', {
+        'total_sales': {"amount__sum": total_sales_amt},
+        'yearly_sales': {"amount__sum": yearly_sales_amt},
+        'monthly_sales': {"amount__sum": monthly_sales_amt},
+        'weekly_sales': {"amount__sum": weekly_sales_amt},
+        'daily_sales_sums': daily_sales_sums,
+        'product_sales_sums': product_sales_sums
+    })
